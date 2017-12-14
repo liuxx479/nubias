@@ -63,10 +63,10 @@ columns_to_keep_dict = {'halo_id':              (0, 'i8'),
 def ps (pos):
     '''for a list of 3D positions, return the power spectrum
     '''
-    print 'gridding'
+    #print 'gridding'
     grid = histogramdd(pos/Lbox*Lgrid,bins=[ibins,ibins,ibins])[0]
     grid = grid/mean(grid) - 1.0
-    print 'computing 3d power spectrum'
+    #print 'computing 3d power spectrum'
     k, ps3d = WLanalysis.PowerSpectrum3D(grid)
     return 2*pi*k/Lbox, ps3d/(Lbox/nn)**3
 
@@ -74,11 +74,10 @@ def process_files (cosmosnap, mcut=arange(11.0, 14.5, 0.5), dataset_name='Subsam
     '''compute Pmm, Phh (several cuts) for cosmo, snap
     '''
     cosmo, snap = cosmosnap
-    print cosmo, snap
     subsample_fn = idir+cosmo+'/snapshots_subsample/snapshot_%03d_idmod_101_0.hdf5'%(snap)
     rockstar_fn = idir+cosmo+'/rockstar/out_%i.list'%(snap)
-    out_fn = '/work/02977/jialiu/neutrino-batch/Phh/Phh_%s_%03d.npy'%(cosmo, snap)
-    out_arr = zeros(shape=(len(mcut)+2, bins))
+    out_fn = '/work/02977/jialiu/nubias/Phh/Phh_%s_%03d.npy'%(cosmo, snap)
+    out_arr = zeros(shape=(len(mcut)+3, bins)) ## k, Pmm, Phh of N+1 bins
     
     if not os.path.isfile(rockstar_fn) or not os.path.isfile(rockstar_fn):
         ### skips if files do not exist for some reason
@@ -88,28 +87,30 @@ def process_files (cosmosnap, mcut=arange(11.0, 14.5, 0.5), dataset_name='Subsam
         return
     
     ######### read subsample files
-    print 'particle files'
+    print 'Opening particle files:',subsample_fn
     f=h5py.File(subsample_fn,'r')
     dataset = f[dataset_name]
     particle_pos = dataset['Position']/1e3
     out_arr[:2] = ps(particle_pos)
+    particle_pos=0 ## release memory
     
     ######### read rockstar files
+    print 'Opening rockstar files:', rockstar_fn
     reader = sim_manager.TabularAsciiReader(rockstar_fn, columns_to_keep_dict) 
     rock_arr = reader.read_ascii() 
     rock_pos = array([rock_arr['halo_x'],rock_arr['halo_y'],rock_arr['halo_z']]).T
     out_arr[2] = ps(rock_pos)[1]
-    particle_pos=0
+    
     
     ######### apply mass cuts to halos
-    logM = log10(rock_arr['halo_mvir'])
     jjj = 2
     for imcut in mcut:
+        print 'Applying mass cut:', imcut, cosmo
         jjj += 1
-        if amax(logM)<imcut: ### no halo above this mass
+        if amax(rock_arr['halo_mvir'])<10**imcut: ### no halo above this mass
             break
-        out_arr[jjj] = ps(rock_pos[logM>imcut])[1]
-    rock_arr=0
+        out_arr[jjj] = ps(rock_pos[rock_arr['halo_mvir']>10**imcut])[1]
+    rock_arr=0 ## release memory
     save(out_fn,out_arr)
 
 all_snaps = []
