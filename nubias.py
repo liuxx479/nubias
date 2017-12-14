@@ -93,6 +93,7 @@ def process_files (cosmosnap, mcut=arange(11.0, 14.5, 0.5), dataset_name='Subsam
     rock_arr = reader.read_ascii() 
     rock_pos = array([rock_arr['halo_x'],rock_arr['halo_y'],rock_arr['halo_z']]).T
     out_arr[2] = ps(rock_pos)[1]
+    particle_pos=0
     
     ######### apply mass cuts to halos
     logM = log10(rock_arr['halo_mvir'])
@@ -100,6 +101,7 @@ def process_files (cosmosnap, mcut=arange(11.0, 14.5, 0.5), dataset_name='Subsam
     for imcut in mcut:
         jjj += 1
         out_arr[jjj] = ps(rock_pos[logM>imcut])[1]
+    rock_arr=0
     save(out_fn,out_arr)
 
 all_snaps = []
