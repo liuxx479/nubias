@@ -100,6 +100,8 @@ def process_files (cosmosnap, mcut=arange(11.0, 14.5, 0.5), dataset_name='Subsam
     jjj = 2
     for imcut in mcut:
         jjj += 1
+        if not sum(logM>imcut): ### no halo above this mass
+            break
         out_arr[jjj] = ps(rock_pos[logM>imcut])[1]
     rock_arr=0
     save(out_fn,out_arr)
