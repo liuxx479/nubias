@@ -75,7 +75,7 @@ def process_files (cosmosnap, mcut=arange(11.0, 14.5, 0.5), dataset_name='Subsam
     out_fn = '/work/02977/jialiu/neutrino-batch/Phh/Phh_%s_%03d.npy'%(cosmo, snap)
     out_arr = zeros(shape=(len(mcut)+2, bins))
     
-    if not os.path.isfile(rockstar_fn) or os.path.isfile(rockstar_fn):
+    if not os.path.isfile(rockstar_fn) or not os.path.isfile(rockstar_fn):
         ### skips if files do not exist for some reason
         print 'Warning: file not exist, cosmo, snap'
         return
