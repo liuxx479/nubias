@@ -112,7 +112,7 @@ def process_files (cosmosnap, mcut=arange(11.0, 14.5, 0.5), dataset_name='Subsam
         jjj += 1
         if amax(logM_arr)<=imcut: ### no halo above this mass
             break
-        out_arr[jjj] = ps(logM_arr>imcut)[1]
+        out_arr[jjj] = ps(rock_pos[logM_arr>imcut])[1]
     
     save(out_fn,out_arr)
 
