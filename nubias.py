@@ -108,7 +108,7 @@ def process_files (cosmosnap, mcut=arange(11.0, 14.5, 0.5), dataset_name='Subsam
 
 all_snaps = []
 for i in range(len(cosmo_arr)):
-    for isnap in arange(nsnaps_arr[i]):
+    for isnap in arange(30, nsnaps_arr[i]):
         all_snaps.append([cosmo_arr[i], int(isnap)])
 
 pool=MPIPool()
