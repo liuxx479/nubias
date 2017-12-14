@@ -60,8 +60,10 @@ columns_to_keep_dict = {'halo_id':              (0, 'i8'),
 def ps (pos):
     '''for a list of 3D positions, return the power spectrum
     '''
+    print 'gridding'
     grid = histogramdd(pos,bins=[ibins,ibins,ibins])[0]
     grid = grid/mean(grid) - 1.0
+    print 'computing 3d power spectrum'
     k, ps3d = WLanalysis.PowerSpectrum3D(grid)
     return k*2*pi/Lbox, ps3d/Lbox**3
 
@@ -83,6 +85,7 @@ def process_files (cosmosnap, mcut=arange(11.0, 14.5, 0.5), dataset_name='Subsam
         return
     
     ######### read subsample files
+    print 'particle files'
     f=h5py.File(subsample_fn,'r')
     dataset = f[dataset_name]
     particle_pos = dataset['Position']/1e3
@@ -100,7 +103,7 @@ def process_files (cosmosnap, mcut=arange(11.0, 14.5, 0.5), dataset_name='Subsam
     jjj = 2
     for imcut in mcut:
         jjj += 1
-        if not sum(logM>imcut): ### no halo above this mass
+        if amax(logM)<imcut: ### no halo above this mass
             break
         out_arr[jjj] = ps(rock_pos[logM>imcut])[1]
     rock_arr=0
