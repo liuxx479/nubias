@@ -105,7 +105,7 @@ def process_files (cosmosnap, mcut=arange(11.0, 14.5, 0.5), dataset_name='Subsam
     ######### apply mass cuts to halos
     jjj = 2
     for imcut in mcut:
-        print 'Applying mass cut:', imcut, cosmo
+        print 'Applying mass cut:', imcut, cosmo, snap
         jjj += 1
         if amax(rock_arr['halo_mvir'])<10**imcut: ### no halo above this mass
             break
