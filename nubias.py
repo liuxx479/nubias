@@ -7,7 +7,10 @@ import h5py
 from emcee.utils import MPIPool 
 
 Lbox = 512.0
-ibins=arange(Lbox)
+Lgrid = 256.0 ## the grid used for computing power spectrum
+ibins=arange(Lgrid)
+nn=(Lbox/Lgrid)**2
+
 idir = '/scratch/02977/jialiu/temp/'
 cosmo_arr = loadtxt('/work/02977/jialiu/neutrino-batch/cosmo_jia_arr.txt',dtype='string')
 nsnaps_arr = loadtxt('/work/02977/jialiu/neutrino-batch/nsnaps_cosmo_jia.txt')
@@ -61,11 +64,11 @@ def ps (pos):
     '''for a list of 3D positions, return the power spectrum
     '''
     print 'gridding'
-    grid = histogramdd(pos,bins=[ibins,ibins,ibins])[0]
+    grid = histogramdd(pos/Lbox*Lgrid,bins=[ibins,ibins,ibins])[0]
     grid = grid/mean(grid) - 1.0
     print 'computing 3d power spectrum'
     k, ps3d = WLanalysis.PowerSpectrum3D(grid)
-    return k*2*pi/Lbox, ps3d/Lbox**3
+    return 2*pi*k/Lbox, ps3d/(Lbox/nn)**3
 
 def process_files (cosmosnap, mcut=arange(11.0, 14.5, 0.5), dataset_name='Subsample', bins=50):    
     '''compute Pmm, Phh (several cuts) for cosmo, snap
