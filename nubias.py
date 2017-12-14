@@ -91,6 +91,7 @@ def process_files (cosmosnap, mcut=arange(11.0, 14.5, 0.5), dataset_name='Subsam
     f=h5py.File(subsample_fn,'r')
     dataset = f[dataset_name]
     particle_pos = dataset['Position']/1e3
+    dataset=0 ## release memory
     out_arr[:2] = ps(particle_pos)
     particle_pos=0 ## release memory
     
@@ -99,18 +100,20 @@ def process_files (cosmosnap, mcut=arange(11.0, 14.5, 0.5), dataset_name='Subsam
     reader = sim_manager.TabularAsciiReader(rockstar_fn, columns_to_keep_dict) 
     rock_arr = reader.read_ascii() 
     rock_pos = array([rock_arr['halo_x'],rock_arr['halo_y'],rock_arr['halo_z']]).T
-    out_arr[2] = ps(rock_pos)[1]
+    logM_arr = log10(rock_arr['halo_mvir'])
+    rock_arr=0 ## release memory
     
+    out_arr[2] = ps(rock_pos)[1]
     
     ######### apply mass cuts to halos
     jjj = 2
     for imcut in mcut:
         print 'Applying mass cut:', imcut, cosmo, snap
         jjj += 1
-        if amax(rock_arr['halo_mvir'])<10**imcut: ### no halo above this mass
+        if amax(logM_arr)<=imcut: ### no halo above this mass
             break
-        out_arr[jjj] = ps(rock_pos[rock_arr['halo_mvir']>10**imcut])[1]
-    rock_arr=0 ## release memory
+        out_arr[jjj] = ps(logM_arr>imcut)[1]
+    
     save(out_fn,out_arr)
 
 all_snaps = []
