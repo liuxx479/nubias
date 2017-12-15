@@ -70,7 +70,7 @@ def ps (pos):
     k, ps3d = WLanalysis.PowerSpectrum3D(grid)
     return 2*pi*k/Lbox, ps3d/(Lbox/nn)**3
 
-def process_files (cosmosnap, mcut=arange(11.0, 14.5, 0.5), dataset_name='Subsample', bins=50):    
+def Phh_gen (cosmosnap, mcut=arange(11.0, 14.5, 0.5), dataset_name='Subsample', bins=50):    
     '''compute Pmm, Phh (several cuts) for cosmo, snap
     '''
     cosmo, snap = cosmosnap
@@ -79,7 +79,7 @@ def process_files (cosmosnap, mcut=arange(11.0, 14.5, 0.5), dataset_name='Subsam
     out_fn = '/work/02977/jialiu/nubias/Phh/Phh_%s_%03d.npy'%(cosmo, snap)
     out_arr = zeros(shape=(len(mcut)+3, bins)) ## k, Pmm, Phh of N+1 bins
     
-    if not os.path.isfile(rockstar_fn) or not os.path.isfile(rockstar_fn):
+    if not os.path.isfile(subsample_fn) or not os.path.isfile(rockstar_fn):
         ### skips if files do not exist for some reason
         print 'Warning: file not exist, cosmo, snap'
         return
@@ -116,6 +116,29 @@ def process_files (cosmosnap, mcut=arange(11.0, 14.5, 0.5), dataset_name='Subsam
     
     save(out_fn,out_arr)
 
+def hmf_gen (cosmosnap, hist_bins=arange(10, 15.5, 0.1)):    
+    '''compute Pmm, Phh (several cuts) for cosmo, snap
+    '''
+    cosmo, snap = cosmosnap
+    rockstar_fn = idir+cosmo+'/rockstar/out_%i.list'%(snap)
+    out_fn = '/work/02977/jialiu/nubias/hmf/hmf_%s_%03d.npy'%(cosmo, snap)
+
+    if not os.path.isfile(rockstar_fn):
+        ### skips if files do not exist for some reason
+        print 'Warning: file does not exist, cosmo, snap'
+        return
+    if os.path.isfile(out_fn): ###### in case the code breaks
+        return
+
+    ######### read rockstar files
+    print 'Opening rockstar files:', rockstar_fn
+    reader = sim_manager.TabularAsciiReader(rockstar_fn, columns_to_keep_dict) 
+    rock_arr = reader.read_ascii() 
+    logM = log10(rock_arr['halo_mvir'])
+    rock_arr = 0 ## release memory
+    histogram(logM,bins=hist_bins)
+    save(out_fn,hmf)
+    
 all_snaps = []
 for i in range(len(cosmo_arr)):
     for isnap in arange(30, nsnaps_arr[i]):
@@ -126,5 +149,6 @@ if not pool.is_master():
     pool.wait()
     sys.exit(0)
 
-pool.map(process_files, all_snaps)
+#pool.map(Phh_gen, all_snaps)
+pool.map(hmf_gen, all_snaps)
 pool.close()
