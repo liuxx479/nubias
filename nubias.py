@@ -136,7 +136,7 @@ def hmf_gen (cosmosnap, hist_bins=arange(10, 15.5, 0.1)):
     rock_arr = reader.read_ascii() 
     logM = log10(rock_arr['halo_mvir'])
     rock_arr = 0 ## release memory
-    histogram(logM,bins=hist_bins)
+    hmf=histogram(logM,bins=hist_bins)[0]
     save(out_fn,hmf)
     
 all_snaps = []
