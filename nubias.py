@@ -121,6 +121,8 @@ def Phh_gen (cosmosnap, mcut = arange(14.5, 15.5, 0.5), mbins = arange(11, 16), 
     ### now do for binned masses, not Mlim
     jjj=len(mcut)+3
     for imbin in mbins:
+        if amax(logM_arr)<=imbin:
+            break
         print 'Applying mass bin:', imbin, imbin+1, cosmo, snap
         out_arr[jjj] = ps(rock_pos[ (logM_arr>=imbin) & (logM_arr<imbin+1.0)])[1]
         jjj+=1
