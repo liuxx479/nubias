@@ -71,7 +71,7 @@ def ps (pos):
     return 2*pi*k/Lbox, ps3d/(Lbox/nn)**3
 
 ## mcut = arange(11.0, 14.5, 0.5)
-def Phh_gen (cosmosnap, mcut = arange(14.5, 15.5, 0.5), mbins = arange(11, 16), dataset_name='Subsample', bins=50):    
+def Phh_gen (cosmosnap, mcut = arange(11.0, 15.5, 0.5), mbins = arange(11, 16), dataset_name='Subsample', bins=50):    
     '''compute Pmm, Phh (several cuts) for cosmo, snap
     '''
     cosmo, snap = cosmosnap
@@ -79,8 +79,8 @@ def Phh_gen (cosmosnap, mcut = arange(14.5, 15.5, 0.5), mbins = arange(11, 16), 
     rockstar_fn = idir+cosmo+'/rockstar/out_%i.list'%(snap)
     out_fn = '/work/02977/jialiu/nubias/Phh/Phh_%s_%03d.npy'%(cosmo, snap)
     outold_fn = '/work/02977/jialiu/nubias/Phh14/Phh_%s_%03d.npy'%(cosmo, snap)
-    #out_arr = zeros(shape=(3+len(mcut)+len(mbins), bins)) ## k, Pmm, Phh of N+1 bins
-    out_arr = zeros(shape=(12+len(mbins), bins)) ## k, Pmm, Phh of N+1 bins
+    out_arr = zeros(shape=(3+len(mcut)+len(mbins), bins)) ## k, Pmm, Phh, then various cuts
+    #out_arr = zeros(shape=(12+len(mbins), bins)) ## k, Pmm, Phh of N+1 bins
 #### fix bug
     out_arr [:10] = load (outold_fn)
 
@@ -92,13 +92,13 @@ def Phh_gen (cosmosnap, mcut = arange(14.5, 15.5, 0.5), mbins = arange(11, 16), 
         return
     
     ######### read subsample files
-    #print 'Opening particle files:',subsample_fn
-    #f=h5py.File(subsample_fn,'r')
-    #dataset = f[dataset_name]
-    #particle_pos = dataset['Position']/1e3
-    #dataset=0 ## release memory
-    #out_arr[:2] = ps(particle_pos)
-    #particle_pos=0 ## release memory
+    print 'Opening particle files:',subsample_fn
+    f=h5py.File(subsample_fn,'r')
+    dataset = f[dataset_name]
+    particle_pos = dataset['Position']/1e3
+    dataset=0 ## release memory
+    out_arr[:2] = ps(particle_pos)
+    particle_pos=0 ## release memory
     
     ######### read rockstar files
     print 'Opening rockstar files:', rockstar_fn
@@ -108,11 +108,11 @@ def Phh_gen (cosmosnap, mcut = arange(14.5, 15.5, 0.5), mbins = arange(11, 16), 
     logM_arr = log10(rock_arr['halo_mvir'])
     rock_arr=0 ## release memory
     
-#    out_arr[2] = ps(rock_pos)[1]
+    out_arr[2] = ps(rock_pos)[1]
     
     ######### apply Mlim to halos
-#    jjj = 2
-    jjj = 10
+    jjj = 2
+    #jjj = 10
     for imcut in mcut:
         print 'Applying mass cut:', imcut, cosmo, snap        
         if amax(logM_arr)<=imcut: ### no halo above this mass
@@ -120,7 +120,7 @@ def Phh_gen (cosmosnap, mcut = arange(14.5, 15.5, 0.5), mbins = arange(11, 16), 
         out_arr[jjj] = ps(rock_pos[logM_arr>imcut])[1]
         jjj += 1
     ### now do for binned masses, not Mlim
-    jjj=12
+    jjj=3+len(mcut)
     for imbin in mbins:
         if amax(logM_arr)<=imbin:
             break
