@@ -79,7 +79,8 @@ def Phh_gen (cosmosnap, mcut = arange(14.5, 15.5, 0.5), mbins = arange(11, 16), 
     rockstar_fn = idir+cosmo+'/rockstar/out_%i.list'%(snap)
     out_fn = '/work/02977/jialiu/nubias/Phh/Phh_%s_%03d.npy'%(cosmo, snap)
     outold_fn = '/work/02977/jialiu/nubias/Phh14/Phh_%s_%03d.npy'%(cosmo, snap)
-    out_arr = zeros(shape=(3+len(mcut)+len(mbins), bins)) ## k, Pmm, Phh of N+1 bins
+    #out_arr = zeros(shape=(3+len(mcut)+len(mbins), bins)) ## k, Pmm, Phh of N+1 bins
+    out_arr = zeros(shape=(12+len(mbins), bins)) ## k, Pmm, Phh of N+1 bins
 #### fix bug
     out_arr [:10] = load (outold_fn)
 
@@ -119,7 +120,7 @@ def Phh_gen (cosmosnap, mcut = arange(14.5, 15.5, 0.5), mbins = arange(11, 16), 
         out_arr[jjj] = ps(rock_pos[logM_arr>imcut])[1]
         jjj += 1
     ### now do for binned masses, not Mlim
-    jjj=len(mcut)+3
+    jjj=12
     for imbin in mbins:
         if amax(logM_arr)<=imbin:
             break
