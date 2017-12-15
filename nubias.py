@@ -78,11 +78,11 @@ def Phh_gen (cosmosnap, mcut = arange(11.0, 15.5, 0.5), mbins = arange(11, 16), 
     subsample_fn = idir+cosmo+'/snapshots_subsample/snapshot_%03d_idmod_101_0.hdf5'%(snap)
     rockstar_fn = idir+cosmo+'/rockstar/out_%i.list'%(snap)
     out_fn = '/work/02977/jialiu/nubias/Phh/Phh_%s_%03d.npy'%(cosmo, snap)
-    outold_fn = '/work/02977/jialiu/nubias/Phh14/Phh_%s_%03d.npy'%(cosmo, snap)
+    #outold_fn = '/work/02977/jialiu/nubias/Phh14/Phh_%s_%03d.npy'%(cosmo, snap)
     out_arr = zeros(shape=(3+len(mcut)+len(mbins), bins)) ## k, Pmm, Phh, then various cuts
     #out_arr = zeros(shape=(12+len(mbins), bins)) ## k, Pmm, Phh of N+1 bins
 #### fix bug
-    out_arr [:10] = load (outold_fn)
+    #out_arr [:10] = load (outold_fn)
 
     if not os.path.isfile(subsample_fn) or not os.path.isfile(rockstar_fn):
         ### skips if files do not exist for some reason
