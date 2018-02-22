@@ -2,6 +2,8 @@ import numpy as np
 from scipy import *
 import sys, os
 from halotools import sim_manager
+from scipy import fftpack
+from scipy.fftpack import fftfreq, fftshift,ifftshift
 import WLanalysis
 import h5py
 from emcee.utils import MPIPool 
