@@ -142,7 +142,7 @@ def Phh_gen (cosmosnap, dataset_name='Subsample', bins=50):
         iMmin, iMmax = mbins[ii],mbins[ii+1]
         if Mhalo_max<=iMmin:
             break
-        print 'Applying mass bin:', iMmin, iMmax cosmo, snap
+        print 'Applying mass bin:', iMmin, iMmax, cosmo, snap
         iout = operation(rock_pos[ (logM_arr>=iMmin) & (logM_arr<iMmax)])
         out_arr[jjj] = iout[1] ## ps
         out_arr[jjj+1] = iout[2] ## bs
