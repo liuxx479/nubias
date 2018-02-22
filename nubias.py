@@ -124,7 +124,7 @@ def Phh_gen (cosmosnap, dataset_name='Subsample', bins=50):
     dataset = f[dataset_name]
     particle_pos = dataset['Position']/1e3
     dataset=0 ## release memory
-    out_arr[:2] = poeration(particle_pos)
+    out_arr[:3] = operation(particle_pos)
     particle_pos=0 ## release memory
     
     ######### read rockstar files
