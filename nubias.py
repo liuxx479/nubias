@@ -98,7 +98,7 @@ def operation (pos):
     k,ips = ps(grid_smoothed)
     return k, ips, bs(grid_smoothed)[1]
 
-mbins = [[12, 12.5, 13, 16]
+mbins = [12, 12.5, 13, 16]
 ## mcut = arange(11.0, 14.5, 0.5)
 def Phh_gen (cosmosnap, dataset_name='Subsample', bins=50):    
     '''compute Pmm, Phh (several cuts, both ends binned, not just lower limit) for cosmo, snap
