@@ -6,10 +6,12 @@ import WLanalysis
 import h5py
 from emcee.utils import MPIPool 
 
-Lbox = 512.0
-Lgrid = 256.0 ## the grid used for computing power spectrum
-ibins=arange(Lgrid)
-nn=(Lbox/Lgrid)**2
+Rarcmin = 2 ## arcmin smoothing
+Lbox = 512.0 #Mpc/h
+Ngrid = 256.0 ## the grid used for computing power spectrum
+ibins=arange(Ngrid)
+nn=(Lbox/Ngrid)**2
+Lgrid = Lbox/Ngrid
 
 idir = '/scratch/02977/jialiu/temp/'
 cosmo_arr = loadtxt('/work/02977/jialiu/neutrino-batch/cosmo_jia_arr.txt',dtype='string')
@@ -59,16 +61,33 @@ columns_to_keep_dict = {'halo_id':              (0, 'i8'),
                         #'halo_m_pe_diemer':     (39, 'f4'),
                         #'halo_halfmass_radius': (40, 'f4'),
                         }
+
+def gridding (pos):
+    grid = histogramdd(pos/Lbox*Ngrid,bins=[ibins,ibins,ibins])[0]
+    grid = grid/mean(grid) - 1.0
+    return grid
+
+def smoothing (grid, Rpix=Rarcmin*Ngrid/Lbox):
+    grid_fft = fftshift(fftpack.fftn(grid))
+    z, y, x = np.indices(grid.shape)
+    icenter=(x.max()-x.min())/2.0
+    center = np.array([icenter, icenter, icenter])
+    if grid.shape[0]%2 == 0:
+        center+=0.5
+    d = Lbox/Ngrid
+    freq_cube = sqrt((x - center[0])**2 + (y - center[1])**2 + (z - center[2])**2)
+    WR = exp(-(2*pi*freq_cube*Rpix)**2/2.0)
+
     
 def ps (pos):
-    '''for a list of 3D positions, return the power spectrum
-    '''
-    #print 'gridding'
-    grid = histogramdd(pos/Lbox*Lgrid,bins=[ibins,ibins,ibins])[0]
-    grid = grid/mean(grid) - 1.0
-    #print 'computing 3d power spectrum'
+    grid = gridding(pos)
     k, ps3d = WLanalysis.PowerSpectrum3D(grid)
-    return 2*pi*k/Lbox, ps3d/(Lbox/nn)**3
+    return 2*pi*k/Lbox, ps3d*(Lgrid/Ngrid)**3
+
+def cross_ps (pos1, pos2):
+    grid1, grid2 = gridding(pos1), gridding(pos2)
+    k, ps3d = WLanalysis.CrossPowerSpectrum3D(grid)
+    return 2*pi*k/Lbox, ps3d*(Lgrid/Ngrid)**3
 
 ## mcut = arange(11.0, 14.5, 0.5)
 def Phh_gen (cosmosnap, mcut = arange(11.0, 15.5, 0.5), mbins = arange(11, 16), dataset_name='Subsample', bins=50):    
