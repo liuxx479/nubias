@@ -166,7 +166,7 @@ def Phm_gen (cosmosnap, dataset_name='Subsample', bins=50):
     rockstar_fn = idir+cosmo+'/rockstar/out_%i.list'%(snap)
     ########### Phm operation
     out_fn = '/work/02977/jialiu/nubias/Phm/Phm_%s_%03d.npy'%(cosmo, snap)
-    out_arr = zeros(shape=(1+len(mbins), bins)) 
+    out_arr = zeros(shape=(len(mbins)-1, bins)) 
     
     if not os.path.isfile(subsample_fn) or not os.path.isfile(rockstar_fn):
         ### skips if files do not exist for some reason
