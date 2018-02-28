@@ -100,18 +100,25 @@ def operation (pos):
     k,ips = ps(grid_smoothed)
     return k, ips, bs(grid_smoothed)[1]
 
+def operation_cross (pos1, pos2):
+    grid_smoothed1 = smoothing(gridding(pos1))
+    grid_smoothed2 = smoothing(gridding(pos2))
+    k, ps3d = WLanalysis.CrossPowerSpectrum3D(grid_smoothed1, grid_smoothed2)
+    return 2*pi*k/Lbox, ps3d*(Lgrid/Ngrid)**3
+
 mbins = [12, 12.5, 13, 16]
 ## mcut = arange(11.0, 14.5, 0.5)
+
 def Phh_gen (cosmosnap, dataset_name='Subsample', bins=50):    
     '''compute Pmm, Phh (several cuts, both ends binned, not just lower limit) for cosmo, snap
     '''
     cosmo, snap = cosmosnap
     subsample_fn = idir+cosmo+'/snapshots_subsample/snapshot_%03d_idmod_101_0.hdf5'%(snap)
     rockstar_fn = idir+cosmo+'/rockstar/out_%i.list'%(snap)
+    ########### Ph2h operation
+    ## k, Pmm, Pm2m, Phh_bin1, Ph2h_bin1, Phh_bin2, Ph2h_bin2...
     out_fn = '/work/02977/jialiu/nubias/Ph2h/Ph2h_%s_%03d.npy'%(cosmo, snap)
     out_arr = zeros(shape=(3+(len(mbins)-1)*2, bins)) 
-    ## old: k, Pmm, Phh, then various cuts
-    ## k, Pmm, Pm2m, Phh_bin1, Ph2h_bin1, Phh_bin2, Ph2h_bin2...
     
     if not os.path.isfile(subsample_fn) or not os.path.isfile(rockstar_fn):
         ### skips if files do not exist for some reason
@@ -151,6 +158,51 @@ def Phh_gen (cosmosnap, dataset_name='Subsample', bins=50):
         jjj+=2
     save(out_fn,out_arr)
 
+def Phm_gen (cosmosnap, dataset_name='Subsample', bins=50):    
+    '''compute Pmm, Phh (several cuts, both ends binned, not just lower limit) for cosmo, snap
+    '''
+    cosmo, snap = cosmosnap
+    subsample_fn = idir+cosmo+'/snapshots_subsample/snapshot_%03d_idmod_101_0.hdf5'%(snap)
+    rockstar_fn = idir+cosmo+'/rockstar/out_%i.list'%(snap)
+    ########### Phm operation
+    out_fn = '/work/02977/jialiu/nubias/Phm/Phm_%s_%03d.npy'%(cosmo, snap)
+    out_arr = zeros(shape=(1+len(mbins), bins)) 
+    
+    if not os.path.isfile(subsample_fn) or not os.path.isfile(rockstar_fn):
+        ### skips if files do not exist for some reason
+        print 'Warning: file not exist, cosmo, snap'
+        return
+    if os.path.isfile(out_fn): ###### in case the code breaks
+        return
+    
+    ######### read subsample files
+    print 'Opening particle files:',subsample_fn
+    f=h5py.File(subsample_fn,'r')
+    dataset = f[dataset_name]
+    particle_pos = dataset['Position']/1e3
+    dataset=0 ## release memory
+    
+    ######### read rockstar files
+    print 'Opening rockstar files:', rockstar_fn
+    reader = sim_manager.TabularAsciiReader(rockstar_fn, columns_to_keep_dict) 
+    rock_arr = reader.read_ascii() 
+    rock_pos = array([rock_arr['halo_x'],rock_arr['halo_y'],rock_arr['halo_z']]).T
+    logM_arr = log10(rock_arr['halo_mvir'])
+    rock_arr=0 ## release memory
+    Mhalo_max = amax(logM_arr) ## largest halo mass in catalogue
+    
+    ### now do for binned masses, not Mlim
+    jjj=0
+    for ii in arange(len(mbins)-1):
+        iMmin, iMmax = mbins[ii],mbins[ii+1]
+        if Mhalo_max<=iMmin:
+            break
+        print 'Applying mass bin:', iMmin, iMmax, cosmo, snap
+        iout = operation_cross(rock_pos[ (logM_arr>=iMmin) & (logM_arr<iMmax)], particle_pos)
+        out_arr[jjj] = iout[1] ## ps
+        jjj+=1
+    save(out_fn,out_arr)
+    
 def hmf_gen (cosmosnap, hist_bins=arange(10, 15.5, 0.1)):    
     '''compute Pmm, Phh (several cuts) for cosmo, snap
     '''
@@ -184,6 +236,7 @@ if not pool.is_master():
     pool.wait()
     sys.exit(0)
 
-pool.map(Phh_gen, all_snaps)
+pool.map(Phm_gen, all_snaps)
+#pool.map(Phh_gen, all_snaps)
 #pool.map(hmf_gen, all_snaps)
 pool.close()
