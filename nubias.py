@@ -111,6 +111,8 @@ mbins = [12, 12.5, 13, 16]
 
 def Phh_gen (cosmosnap, dataset_name='Subsample', bins=50):    
     '''compute Pmm, Phh (several cuts, both ends binned, not just lower limit) for cosmo, snap
+    output:
+    columns are: k, Pmm, Pm2m, Phh_bin1, Ph2h_bin1, Phh_bin2, Ph2h_bin2, Phh_bin3, Ph2h_bin3
     '''
     cosmo, snap = cosmosnap
     subsample_fn = idir+cosmo+'/snapshots_subsample/snapshot_%03d_idmod_101_0.hdf5'%(snap)
@@ -159,7 +161,8 @@ def Phh_gen (cosmosnap, dataset_name='Subsample', bins=50):
     save(out_fn,out_arr)
 
 def Phm_gen (cosmosnap, dataset_name='Subsample', bins=50):    
-    '''compute Pmm, Phh (several cuts, both ends binned, not just lower limit) for cosmo, snap
+    '''compute Phm (several cuts, both ends binned, not just lower limit) for cosmo, snap
+    columns are: 
     '''
     cosmo, snap = cosmosnap
     subsample_fn = idir+cosmo+'/snapshots_subsample/snapshot_%03d_idmod_101_0.hdf5'%(snap)
